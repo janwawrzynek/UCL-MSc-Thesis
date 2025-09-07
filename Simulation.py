@@ -92,7 +92,9 @@ if __name__ == "__main__":
     # "LIFETIME_CONTOUR_PLOT"
     # "PLOT_COMBINED_BRANCHING_RATIO_SM_ALP"
     # "Fermi_theory_error" ->  Calculates the Fermi theory error for HNL decays
-    TASK_TO_RUN = "PLOT_REL_DEGREES_OF_FREEDOM_VS_Z"  # Change this to switch tasks
+    # "total_sterile_width" -> Calculates the total decay width for a Sterile Neutrino
+    # "plot_total_lifetime" -> Plots the total lifetime of a Sterile Neutrino over a mass range
+    TASK_TO_RUN = "PLOT_COMBINED_BRANCHING_RATIO_SM_ALP"  # Change this to switch tasks
     ####################################################################
     match TASK_TO_RUN: 
         case "SINGLE_CALCULATION":
@@ -223,6 +225,19 @@ if __name__ == "__main__":
                     n_masses=200  # resolution in m_N
                     
                 )
+
+        case "total_sterile_width":
+            print(f"--- Calculating total decay width for a Sterile Neutrino ---")
+            plotter = Plotting(model_params=base_params, g_star_csv_path=str(csv_path))
+
+            mass_range = np.logspace(np.log10(0.05), np.log10(5.0), num=10)
+            plotter.plot_total_sterile_width(mass_range)
+        case "plot_total_lifetime": 
+            print(f"--- Calculating total decay width for a Sterile Neutrino ---")
+            plotter = Plotting(model_params=base_params, g_star_csv_path=str(csv_path))
+
+            mass_range = np.logspace(np.log10(0.05), np.log10(5.0), num=10)
+            plotter.plot_total_lifetime(mass_range)
 
         case _:
             print(f"Error: Unknown task '{TASK_TO_RUN}'. Please choose a valid task.")

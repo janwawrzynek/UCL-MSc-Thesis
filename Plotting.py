@@ -358,17 +358,17 @@ class Plotting:
             #change the below to [0,0] = 1.0 for the first sterile neutrino
             #change the below to [1,1] = 1.0 for the second sterile neutrino
             # change the below to [2,2] = 1.0 for the third sterile neutrino
-            params.U_matrix[2, 2] = 1.0
+            params.U_matrix[0, 0] = 1.0
             model = Model(params=params, g_star_csv_path=self.g_star_csv_path)
             #change sterile neutrino to n1,n2,n3 as needed
-            sterile = model.create_sterile_neutrino('n3')
+            sterile = model.create_sterile_neutrino('n1')
             Gamma_unit[i] = sterile.get_total_decay_width(model)
 
         # 3) For each lifetime level, solve U2 = ħ/(τ*Γ_unit)
         plt.figure(figsize=(10,6))
         for tau in levels:
             U2 = HBAR / (tau * Gamma_unit)
-            plt.plot(m_vals, U2, lw=2, label=f"HNL Lifetime = {tau}s")
+            plt.plot(m_vals, U2, lw=2, label=f"sterile neutrino Lifetime = {tau}s")
 
         # 4) Style the plot
         plt.xscale("log")
@@ -377,9 +377,9 @@ class Plotting:
         plt.yticks(fontsize=20)
         plt.xlim(mN_min, mN_max)
         #plt.xlim(1.7,mN_max)
-        plt.xlabel(r"Sterile mass $m_{N_3}$ (GeV)", fontsize=20)
+        plt.xlabel(r"Sterile mass $m_{N_1}$ (GeV)", fontsize=20)
         #adjust the label to reflect the mixing term
-        plt.ylabel(r"Mixing $|U_{\tau \ N_3}|^2$", fontsize=20)
+        plt.ylabel(r"Mixing $|U_{e \ N_1}|^2$", fontsize=20)
         #plt.title("Iso–Lifetime Curves for N1 HNL")
         plt.legend(prop = {'size': 20})
         plt.grid(which="both", ls="--", alpha=0.5)
@@ -404,7 +404,7 @@ class Plotting:
             # build a fresh model at mass m
             params = copy.copy(self.base_params)
             params.m_N = m
-            params.f_a =1e5
+            params.f_a =1e6###############################
             model = Model(params=params, g_star_csv_path=self.g_star_csv_path)
             Γ_SM_tot  = 0.0
             Γ_ALP_tot = 0.0
@@ -471,3 +471,112 @@ class Plotting:
         plt.tight_layout()
         plt.show()
         
+
+    def plot_total_sterile_width(self, mass_range: np.ndarray):
+        '''
+        plotting the total decay width for the sterile neutrino over a mass range. 
+        '''
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import copy
+        from .Model import Model
+
+        Gamma_SM_list  = []
+        Gamma_ALP_list = []
+        Gamma_total_list = []
+
+        for m in mass_range:
+            # build a fresh model at mass m
+            params = copy.copy(self.base_params)
+            params.m_N = m
+            params.f_a =1e6
+            model = Model(params=params, g_star_csv_path=self.g_star_csv_path)
+            Gamma_SM_tot  = 0.0
+            Gamma_ALP_tot = 0.0
+            
+            sterile = model.create_sterile_neutrino('n1')
+            # sum all SM widths
+            gamma_SM  = (sterile.get_charged_leptonic_width(model)
+                + sterile.get_invisible_width(model)
+                + sterile.get_hadronic_width(model))
+            gamma_ALP = sterile.get_ALP_width(model)
+            Gamma_SM_tot  += gamma_SM
+            Gamma_ALP_tot += gamma_ALP
+            Gamma_total = Gamma_SM_tot + Gamma_ALP_tot
+            Gamma_total_list.append(Gamma_total)
+
+
+        # now plot
+        plt.figure(figsize=(8,6))
+        plt.plot(mass_range, Gamma_total_list,  label="Γ_tot",  lw=2)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlim(mass_range[0], mass_range[-1])
+        plt.xlabel(r"Sterile Neutrino Mass $m_N$ (GeV)", fontsize =20)
+        plt.ylabel("Decay Width (Γ)", fontsize=20)
+        #plt.title("HNL Branching Ratios into SM and ALP Channels $f_a = 10^7$ GeV")
+        plt.grid(which="both", ls="--", alpha=0.5)
+        #plt.legend(prop = {'size': 20})
+        plt.tight_layout()
+        plt.show()
+
+
+    def plot_total_lifetime(self, mass_range: np.ndarray):
+        '''
+        plotting the total decay width for the sterile neutrino over a mass range. 
+        '''
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import copy
+        from .Model import Model
+
+        Gamma_SM_list  = []
+        Gamma_ALP_list = []
+        lifetime_total_list = []
+
+        for m in mass_range:
+            # build a fresh model at mass m
+            params = copy.copy(self.base_params)
+            params.m_N = m
+            params.f_a =1e3
+            model = Model(params=params, g_star_csv_path=self.g_star_csv_path)
+            Gamma_SM_tot  = 0.0
+            Gamma_ALP_tot = 0.0
+            
+            sterile = model.create_sterile_neutrino('n1')
+            # sum all SM widths
+            gamma_SM  = (sterile.get_charged_leptonic_width(model)
+                + sterile.get_invisible_width(model)
+                + sterile.get_hadronic_width(model))
+            gamma_ALP = sterile.get_ALP_width(model)
+            Gamma_SM_tot  += gamma_SM
+            Gamma_ALP_tot += gamma_ALP
+            Gamma_total = Gamma_SM_tot + Gamma_ALP_tot
+            lifetime_value = HBAR / Gamma_total if Gamma_total > 0 else np.inf
+            lifetime_total_list.append(lifetime_value)
+    
+
+
+        # now plot
+        plt.figure(figsize=(8,6))
+        plt.plot(mass_range, lifetime_total_list)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlim(mass_range[0], mass_range[-1])
+        plt.xlabel(r"Sterile Neutrino Mass $m_N$ (GeV)", fontsize =20)
+        plt.ylabel("Lifetime (s)", fontsize=20)
+        #plt.title("HNL Branching Ratios into SM and ALP Channels $f_a = 10^7$ GeV")
+        plt.grid(which="both", ls="--", alpha=0.5)
+        #plt.legend(prop = {'size': 20})
+        plt.tight_layout()
+        plt.show()
+
+
+    #def plot_sterile_lifetime
+
+
+

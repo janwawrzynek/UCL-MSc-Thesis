@@ -25,7 +25,7 @@ class ModelParameters:
                               [0.009, 0.040, 0.999]])
         
         # PMNS-like mixing matrix for HNLs, adjust these as required for the chosen simulation. 
-        self.U_matrix = np.array([[1e-10, 0, 0],
+        self.U_matrix = np.array([[1e-8, 0, 0],
                                   [0,0, 0],
                                   [0,0, 0]])
         
